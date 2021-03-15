@@ -479,6 +479,7 @@
     <spotbugsannotations.version>4.0.2</spotbugsannotations.version>
     <checkstyle.version>8.39</checkstyle.version>
     <enforcer.version>3.0.0-M3</enforcer.version>
+    <byteman.version>4.0.14</byteman.version>
 
     <!-- parameters to pass to C client build -->
     <c-client-openssl>yes</c-client-openssl>
@@ -671,6 +672,30 @@
         <artifactId>snappy-java</artifactId>
         <version>${snappy.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman</artifactId>
+        <version>${byteman.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-bmunit</artifactId>
+        <version>${byteman.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-install</artifactId>
+        <version>${byteman.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-submit</artifactId>
+        <version>${byteman.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -817,6 +842,26 @@
             <execution>
                <id>process-resource-bundles</id>
                <phase>none</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.jboss.byteman</groupId>
+          <artifactId>byteman-rulecheck-maven-plugin</artifactId>
+          <version>${byteman.version}</version>
+          <executions>
+            <execution>
+              <id>rulecheck-test</id>
+              <goals>
+                <goal>rulecheck</goal>
+              </goals>
+              <configuration>
+                <includes>
+                  <include>**/*.btm</include>
+                </includes>
+                <verbose>true</verbose>
+                <failOnWarning>false</failOnWarning>
+              </configuration>
             </execution>
           </executions>
         </plugin>

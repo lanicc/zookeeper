@@ -1,0 +1,52 @@
+# 接受其他节点的连接，只接受一个(createCounter($0))，第二个就抛异常
+# accept one connection
+RULE acceptConnect_invoke_exception
+CLASS org.apache.zookeeper.server.quorum.Leader$LearnerCnxAcceptor$LearnerCnxAcceptorHandler
+METHOD acceptConnections
+AT INVOKE java.net.ServerSocket.accept
+IF NOT createCounter($0)
+DO
+    traceln("Captrued by Byteman, inject IOException");
+    throw new java.io.IOException("Inject Exception");
+ENDRULE
+
+
+# 异常处理之后(handleException之后)，唤醒在等待的leading线程
+# LearnerCnxAcceptorHandler thread run method exit, signal
+RULE run_exit
+CLASS org.apache.zookeeper.server.quorum.Leader$LearnerCnxAcceptor$LearnerCnxAcceptorHandler
+METHOD run
+AT EXIT
+IF true
+DO
+    traceln("Exception handled over, signalWake");
+    signalWake(org.apache.zookeeper.server.quorum.Leader.class);
+ENDRULE
+
+
+# 执行了LearnerCnxAcceptor.start之后，就等待唤醒
+# wait for LearnerCnxAcceptorHandler exit
+RULE leading
+CLASS org.apache.zookeeper.server.quorum.Leader
+METHOD lead
+AFTER INVOKE org.apache.zookeeper.server.quorum.Leader$LearnerCnxAcceptor.start
+IF true
+DO
+    traceln("startLeader");
+    waitFor(org.apache.zookeeper.server.quorum.Leader.class, 5000);
+    traceln("zk server state before startServer: " + $0.zk.state);
+ENDRULE
+
+
+# 在startZkServer前，检查zk的状态
+# check zk server state before startZkServer
+RULE startZkServer
+CLASS org.apache.zookeeper.server.quorum.Leader
+METHOD startZkServer
+HELPER org.apache.zookeeper.server.quorum.LeaderLeadingStateTest$StateMonitorHelper
+AT ENTRY
+IF $0.zk.state EQ org.apache.zookeeper.server.ZooKeeperServer$State.ERROR
+DO
+    traceln("zk server state: " + $0.zk.state);
+    killThread();
+ENDRULE

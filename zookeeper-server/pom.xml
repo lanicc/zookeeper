@@ -172,6 +172,28 @@
       <artifactId>snappy-java</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-bmunit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-install</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-submit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -281,6 +303,25 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-rulecheck-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>rulecheck-test</id>
+            <goals>
+              <goal>rulecheck</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*.btm</include>
+              </includes>
+              <verbose>true</verbose>
+              <failOnWarning>false</failOnWarning>
+            </configuration>
           </execution>
         </executions>
       </plugin>
