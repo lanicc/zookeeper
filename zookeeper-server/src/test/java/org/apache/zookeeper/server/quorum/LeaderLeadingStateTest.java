@@ -8,7 +8,6 @@ import org.apache.zookeeper.server.ServerCnxnFactory;
 import org.apache.zookeeper.server.ServerMetrics;
 import org.apache.zookeeper.server.ZKDatabase;
 import org.apache.zookeeper.server.admin.AdminServer;
-import org.apache.zookeeper.server.admin.JettyAdminServer;
 import org.apache.zookeeper.server.auth.ProviderRegistry;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.util.JvmPauseMonitor;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.sasl.SaslException;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +49,10 @@ public class LeaderLeadingStateTest {
             flag = false;
             latch.countDown();
         }
+    }
+
+    static {
+        System.setProperty("zookeeper.admin.enableServer", "false");
     }
 
 
@@ -207,23 +209,7 @@ public class LeaderLeadingStateTest {
 
         @Override
         protected QuorumPeer getQuorumPeer() throws SaslException {
-            return quorumPeer == null ? new MockQuorumPeerMain.MockQuorumPeer() : quorumPeer;
-        }
-
-        static class MockQuorumPeer extends QuorumPeer {
-            public MockQuorumPeer() throws SaslException {
-                super();
-                try {
-                    adminServer = new JettyAdminServer() {
-                        @Override
-                        public void start() throws AdminServerException {
-                            //do nothing
-                        }
-                    };
-                } catch (AdminServer.AdminServerException | IOException | GeneralSecurityException e) {
-                    e.printStackTrace();
-                }
-            }
+            return quorumPeer == null ? new QuorumPeer() : quorumPeer;
         }
 
 
